@@ -19,3 +19,45 @@ Sensor readings are calibrated with noise to mimic real-time sensor readings. Fi
 
 # CODE - 
 
+# GRAPHS - 
+Temperature Filtering - 
+<img width="1119" height="674" alt="temperature_filtering" src="https://github.com/user-attachments/assets/f06d91e5-0a58-4b7a-a379-65c67a796d6f" />
+
+Humidity Filtering - 
+<img width="1119" height="674" alt="humidity_filtering" src="https://github.com/user-attachments/assets/7a5d81a3-d3f6-4864-bee3-ee0c5ce7c248" />
+
+Turbidity Filtering - 
+<img width="1119" height="674" alt="turbidity_filtering" src="https://github.com/user-attachments/assets/0b2cd2cb-68e8-43b5-9817-416ce532b09c" />
+
+Water-level Filtering - 
+<img width="1119" height="674" alt="water_level_filtering" src="https://github.com/user-attachments/assets/4c87c584-0b19-40f9-b914-e841deef1d3b" />
+
+# RESULTS - 
+RMSE of each sensor - 
+
+| Sensor | Kalman filter RMSE | Moving Average RMSE |
+|:---|:---:|---:|
+| DHT22 Temperature | 0.276 | 0.244 |
+| DHT22 Humidity | 0.639 | 0.500 |
+| Turbidity | 0.744 | 0.504 |
+| Water-level | 0.092 | 0.074 |
+
+# OBSERVATIONS - 
+- When a noise signal is added to the sensor to replicate real-time sensor readings and these are filtered using Kalman filter and Moving Average techniques, a graph depicting all 4 signals for each sensor module is shown.
+- This graph does not differentiate which filter gives accurate readings compared to other filter. Both filter signals seem to align each other closely.
+- In order to determine which filter works better, RMSE method is implemented.
+- This method calculates the difference (Filtered signal - true signal) and gives a number in decimals.
+- From the above RMSE table, it can be observed that Moving Average gives precise readings compared to Kalman filter.
+- This is because for Kalman filter, noise tuning parameter (Q = 0.01) was tunes very low, causing filter to depend on its estimate rather than incoming sensor readings.
+
+# LIMITATIONS - 
+Though this project imitates real-time sensor readings, it is based on datasheet estimates. This can impact the readings.
+
+# FUTURE SCOPE - 
+With the calibration of sensor readings, noise signal and filters, a sensed signal is obtained. In the future, this can be coordinated with hardware setup for full-scale automation. 
+
+# PROJECT STATUS - 
+MATLAB simulated project.
+
+# AUTHOR - 
+KOTIKALAPUDI RAMYA SHRUTI
