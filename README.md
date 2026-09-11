@@ -4,7 +4,7 @@
 To simulate the readings from 3 sensors – Turbidity sensor, DHT22 (Temperature and Humidity) sensor, Water level sensor using MATLAB, accompanied by realistic noise and applying a moving filter and comparing it against a Kalman filter for accurate readings.
 
 # METHODOLOGY - 
-Sensor readings are calibrated with noise to mimic real-time sensor readings. Filters - kalman filter & Moving Average are used to generate actual readings of those signals.
+Sensor readings are combined with noise to mimic real-time sensor readings. Filters - Kalman filter & Moving Average are used to generate actual readings of those signals.
 
 # PARAMETERS - 
 1.	t => Time in min for 1 day
@@ -13,7 +13,7 @@ Sensor readings are calibrated with noise to mimic real-time sensor readings. Fi
 4.	R = 0.25 => measurement noise estimate [Kalman filter tuning]
 5.	DHT22 Temperature noise signal = ±0.5°C 
 6.	DHT22 Humidity noise signal = ±2%
-7.	Turbidity noise signal = ±2%
+7.	Turbidity noise signal = ±2% NTU
 8.	Water level noise signal = ±0.3 cm
 9.	rng(42) => a random integer set to 42
 
@@ -49,7 +49,7 @@ RMSE of each sensor -
 - In order to determine which filter works better, RMSE method is implemented.
 - This method calculates the difference (Filtered signal - true signal) and gives a number in decimals.
 - From the above RMSE table, it can be observed that Moving Average gives precise readings compared to Kalman filter.
-- This is because for Kalman filter, noise tuning parameter (Q = 0.01) was tunes very low, causing filter to depend on its estimate rather than incoming sensor readings.
+- This is because for Kalman filter, noise tuning parameter (Q = 0.01) was tuned very low, causing filter to depend on its estimate rather than incoming sensor readings.
 
 # LIMITATIONS - 
 Though this project imitates real-time sensor readings, it is based on datasheet estimates. This can impact the readings.
