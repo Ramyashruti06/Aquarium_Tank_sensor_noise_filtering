@@ -1,0 +1,149 @@
+
+%% Turtle Tank Sensor Fusion - Noise Modeling & Filtering
+% Simulates DHT22 (temp + humidity), turbidity, and water level sensors
+% Compares raw noisy readings vs Moving Average vs Kalman filter
+
+clear; clc; close all;
+rng(42);  % fixed seed for reproducibility
+
+%% Setup
+t = 0:1:1440;              % time in minutes, 1 full day
+windowSize = 15;           % moving average window
+Q = 0.01;                  % process noise estimate (Kalman)
+R = 0.25;                  % measurement noise estimate (Kalman)
+
+outDir = fullfile('C:\Users\kramy\Desktop', 'turtle_tank_figures');
+if ~exist(outDir, 'dir')
+    mkdir(outDir);
+end
+
+%% ---------------- TEMPERATURE (DHT22) ----------------
+
+true_temp = 26 + 2*sin(2*pi*t/1440);
+noise_temp = 0.5*randn(size(t));           % DHT22 accuracy ~±0.5C
+drift_temp = 0.3*sin(2*pi*t/2000);         % slow sensor drift
+sensed_temp = true_temp + noise_temp + drift_temp;
+
+filtered_temp_MA = movmean(sensed_temp, windowSize);
+Kalman_temp = KalmanFilter1D(sensed_temp, Q, R);
+
+figure;
+plot(t, true_temp, 'k', 'LineWidth', 1.5); hold on;
+plot(t, sensed_temp, 'r.');
+plot(t, filtered_temp_MA, 'b', 'LineWidth', 1.2);
+plot(t, Kalman_temp, 'g', 'LineWidth', 1.2);
+legend('True', 'Raw Sensor', 'Moving Avg', 'Kalman');
+xlabel('Time (min)'); ylabel('Temperature (°C)');
+title('Turtle Tank Temperature: Sensor Noise vs Filtering');
+
+rmse_temp_MA = sqrt(mean((filtered_temp_MA - true_temp).^2));
+rmse_temp_Kalman = sqrt(mean((Kalman_temp - true_temp).^2));
+
+fprintf('Temperature RMSE - Moving Avg: %.3f, Kalman: %.3f\n', rmse_temp_MA, rmse_temp_Kalman);
+
+outFile = fullfile(outDir, 'temperature_filtering.png');
+saveas(gcf, outFile);
+
+
+%% ---------------- HUMIDITY (DHT22) ----------------
+
+true_humidity = 60 + 10*sin(2*pi*t/1440 + pi/4);
+noise_humidity = 2*randn(size(t));         % DHT22 humidity accuracy ~±2-5%
+sensed_humidity = true_humidity + noise_humidity;
+
+filtered_humidity_MA = movmean(sensed_humidity, windowSize);
+Kalman_humidity = KalmanFilter1D(sensed_humidity, Q, R);
+
+figure;
+plot(t, true_humidity, 'k', 'LineWidth', 1.5); hold on;
+plot(t, sensed_humidity, 'r.');
+plot(t, filtered_humidity_MA, 'b', 'LineWidth', 1.2);
+plot(t, Kalman_humidity, 'g', 'LineWidth', 1.2);
+legend('True', 'Raw Sensor', 'Moving Avg', 'Kalman');
+xlabel('Time (min)'); ylabel('Humidity (%)');
+title('Turtle Tank Humidity: Sensor Noise vs Filtering');
+
+rmse_humid_MA = sqrt(mean((filtered_humidity_MA - true_humidity).^2));
+rmse_humid_Kalman = sqrt(mean((Kalman_humidity - true_humidity).^2));
+
+fprintf('Humidity RMSE - Moving Avg: %.3f, Kalman: %.3f\n', rmse_humid_MA, rmse_humid_Kalman);
+
+
+outFile = fullfile(outDir, 'humidity_filtering.png');
+saveas(gcf, outFile);
+
+
+%% ---------------- TURBIDITY ----------------
+
+true_turbidity = 5 + 20*exp(-((t-600).^2)/(2*30^2));  % spike at feeding time
+noise_turb = 2*randn(size(t));
+sensed_turbidity = true_turbidity + noise_turb;
+
+filtered_turb_MA = movmean(sensed_turbidity, windowSize);
+Kalman_turb = KalmanFilter1D(sensed_turbidity, Q, R);
+
+figure;
+plot(t, true_turbidity, 'k', 'LineWidth', 1.5); hold on;
+plot(t, sensed_turbidity, 'r.');
+plot(t, filtered_turb_MA, 'b', 'LineWidth', 1.2);
+plot(t, Kalman_turb, 'g', 'LineWidth', 1.2);
+legend('True', 'Raw Sensor', 'Moving Avg', 'Kalman');
+xlabel('Time (min)'); ylabel('Turbidity (NTU)');
+title('Turtle Tank Turbidity: Sensor Noise vs Filtering');
+
+rmse_turb_MA = sqrt(mean((filtered_turb_MA - true_turbidity).^2));
+rmse_turb_Kalman = sqrt(mean((Kalman_turb - true_turbidity).^2));
+
+fprintf('Turbidity RMSE - Moving Avg: %.3f, Kalman: %.3f\n', rmse_turb_MA, rmse_turb_Kalman);
+
+
+outFile = fullfile(outDir, 'turbidity_filtering.png');
+saveas(gcf, outFile);
+
+
+%% ---------------- WATER LEVEL ----------------
+
+true_level = 15 + 0.5*sin(2*pi*t/700);
+noise_level = 0.3*randn(size(t));          % Resistive sensor noise
+sensed_level = true_level + noise_level;
+
+filtered_level_MA = movmean(sensed_level, windowSize);
+Kalman_level = KalmanFilter1D(sensed_level, Q, R);
+
+figure;
+plot(t, true_level, 'k', 'LineWidth', 1.5); hold on;
+plot(t, sensed_level, 'r.');
+plot(t, filtered_level_MA, 'b', 'LineWidth', 1.2);
+plot(t, Kalman_level, 'g', 'LineWidth', 1.2);
+legend('True', 'Raw Sensor', 'Moving Avg', 'Kalman');
+xlabel('Time (min)'); ylabel('Water Level (cm)');
+title('Turtle Tank Water Level: Sensor Noise vs Filtering');
+
+rmse_level_MA = sqrt(mean((filtered_level_MA - true_level).^2));
+rmse_level_Kalman = sqrt(mean((Kalman_level - true_level).^2));
+
+fprintf('Water Level RMSE - Moving Avg: %.3f, Kalman: %.3f\n', rmse_level_MA, rmse_level_Kalman);
+
+outFile = fullfile(outDir, 'water_level_filtering.png');
+saveas(gcf, outFile);
+
+disp('All sensor plots generated and saved to /figures.');
+
+%% ---------------- Local Function ----------------
+
+function x_out = KalmanFilter1D(measurements, Q, R)
+    x_est = measurements(1);
+    P = 1;
+    x_out = zeros(size(measurements));
+    for i = 1:length(measurements)
+        % Predict
+        P = P + Q;
+        % Update
+        K = P / (P + R);
+        x_est = x_est + K*(measurements(i) - x_est);
+        P = (1-K)*P;
+        x_out(i) = x_est;
+    end
+end
+
+
